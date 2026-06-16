@@ -1,0 +1,30 @@
+# Unity generated
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# IDE / VS
+# *.csproj (Unity generates these, keep for reference)
+# *.sln (Unity generates these, keep for reference)
+.vs/
+.idea/
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Codely (keep if needed)
+.codely-cli/
+.codelyignore
+.com-unity-codely.json
+.vsconfig
