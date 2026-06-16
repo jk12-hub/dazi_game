@@ -52,8 +52,9 @@ public class MonsterAI : MonoBehaviour
 
         // 计算速度
         float phaseMult = GetPhaseMultiplier();
+        float totalTime = gameData.totalGameTime > 0 ? gameData.totalGameTime : 180f;
         float baseSpeed = gameData.monsterBaseSpeed +
-                          (elapsedTime / gameData.totalGameTime) * gameData.monsterSpeedGrowth;
+                          (elapsedTime / totalTime) * gameData.monsterSpeedGrowth;
         float wave = Mathf.Sin(elapsedTime * gameData.waveFrequency) * gameData.waveAmplitude;
         float spike = Random.Range(-gameData.randomSpikeRange, gameData.randomSpikeRange);
 

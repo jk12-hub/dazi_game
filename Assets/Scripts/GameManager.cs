@@ -20,6 +20,7 @@ public class GameManager : MonoBehaviour
     [Header("场景引用")]
     public Camera mainCamera;
     public Transform worldRoot;
+    private Transform cachedBgTransform; // 缓存避免每帧 Find
 
     [Header("状态")]
     [SerializeField] private GameState state = GameState.Playing;
@@ -45,6 +46,10 @@ public class GameManager : MonoBehaviour
 
         // 程序化生成 Sprite 并应用到场景对象
         SetupSprites();
+
+        // 缓存背景引用（避免每帧 Find）
+        var bgObj = GameObject.Find("Background");
+        if (bgObj != null) cachedBgTransform = bgObj.transform;
 
         StartGame();
     }
@@ -139,14 +144,11 @@ public class GameManager : MonoBehaviour
 
     void UpdateBackgroundParallax()
     {
-        if (mainCamera == null) return;
+        if (mainCamera == null || cachedBgTransform == null) return;
 
-        var bgObj = GameObject.Find("Background");
-        if (bgObj != null)
-        {
-            float camX = mainCamera.transform.position.x;
-            bgObj.transform.position = new Vector3(camX * 0.3f, 1f, 5f);
-        }
+        float camX = mainCamera.transform.position.x;
+        cachedBgTransform.position = new Vector3(camX * 0.3f, 1f, 5f);
+    }
     }
 
     void StartGame()

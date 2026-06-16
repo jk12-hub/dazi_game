@@ -36,7 +36,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         if (typingEngine == null) typingEngine = FindAnyObjectByType<TypingEngine>();
-        if (gameData == null) gameData = FindAnyObjectByType<GameData>()?.GetComponent<GameData>() ?? Resources.Load<GameData>("GameData/DefaultGameConfig");
+        if (gameData == null) gameData = Resources.Load<GameData>("GameData/DefaultGameConfig");
         if (distanceManager == null) distanceManager = FindAnyObjectByType<DistanceManager>();
     }
 

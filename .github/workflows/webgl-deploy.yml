@@ -1,0 +1,79 @@
+name: Build WebGL and Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create empty build placeholder
+        run: |
+          mkdir -p WebGL
+          cat > WebGL/index.html << 'HTMLEOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>打字逃生游戏 - Typing Escape</title>
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body { background: #0a0a1a; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
+              .container { text-align: center; }
+              .warning { background: #1a1a2e; border: 2px solid #e94560; border-radius: 12px; padding: 40px; max-width: 600px; margin: 20px; }
+              .warning h1 { color: #e94560; font-size: 2rem; margin-bottom: 16px; }
+              .warning p { color: #a0a0c0; font-size: 1.1rem; line-height: 1.8; margin-bottom: 12px; }
+              .warning .emoji { font-size: 3rem; margin-bottom: 16px; }
+              .warning code { background: #0a0a1a; color: #00ff88; padding: 3px 8px; border-radius: 4px; font-size: 0.95rem; }
+              .btn { display: inline-block; margin-top: 20px; padding: 12px 32px; background: #e94560; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; text-decoration: none; }
+              .btn:hover { background: #ff6b81; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="warning">
+                <div class="emoji">🎮</div>
+                <h1>打字逃生游戏</h1>
+                <p>WebGL 版本需要通过 Unity Editor 构建。</p>
+                <p>请在本地打开项目，选择 <code>File → Build Settings → WebGL → Build</code></p>
+                <p>然后将 <code>Build/WebGL/</code> 文件夹内容上传到此仓库的 GitHub Pages。</p>
+                <p style="margin-top:16px;color:#888;">该项目使用团结引擎 (Tuanjie 2022.3.61t11)</p>
+                <a href="https://github.com/jk12-hub/dazi_game" class="btn">📂 查看源码</a>
+              </div>
+            </div>
+          </body>
+          </html>
+          HTMLEOF
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: WebGL
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

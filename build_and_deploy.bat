@@ -1,103 +1,59 @@
 @echo off
 chcp 65001 >nul
-setlocal enabledelayedexpansion
+cd /d "%~dp0"
 
 echo ============================================
-echo   打字逃生游戏 - WebGL 一键构建部署
+echo   打字逃生游戏 - 一键构建部署
 echo ============================================
 echo.
 
-:: 项目路径
-set "PROJECT_DIR=%~dp0"
-cd /d "%PROJECT_DIR%"
+echo [1/4] 杀掉旧进程...
+taskkill /f /im Tuanjie.exe >nul 2>&1
+taskkill /f /im Unity.exe >nul 2>&1
+taskkill /f /im bee_backend.exe >nul 2>&1
+timeout /t 2 /nobreak >nul
 
-:: 查找 Tuanjie Editor
-set "EDITOR_PATH="
+echo [2/4] 清理旧缓存...
+rmdir /s /q "Library" >nul 2>&1
+rmdir /s /q "Temp" >nul 2>&1
+mkdir Library >nul 2>&1
+mkdir Temp >nul 2>&1
 
-:: 1. 检查 Tuanjie Hub 默认安装路径
-for /d %%d in ("C:\Program Files\Unity\Hub\Editor\*t11*") do (
-    if exist "%%d\Editor\Tuanjie.exe" set "EDITOR_PATH=%%d\Editor\Tuanjie.exe"
-)
-for /d %%d in ("C:\Program Files\Tuanjie*") do (
-    if exist "%%d\Editor\Tuanjie.exe" set "EDITOR_PATH=%%d\Editor\Tuanjie.exe"
-)
+echo [3/4] 构建 WebGL（约3-10分钟）...
+set "EDITOR=C:\Program Files\Tuanjie\Hub\Editor\2022.3.61t11\Editor\Tuanjie.exe"
+set "LOG=WebGL\build.log"
+rmdir /s /q WebGL >nul 2>&1
+mkdir WebGL >nul 2>&1
 
-:: 2. 检查标准 Unity 路径
-if "%EDITOR_PATH%"=="" (
-    for /d %%d in ("C:\Program Files\Unity\Hub\Editor\2022.3*") do (
-        if exist "%%d\Editor\Unity.exe" set "EDITOR_PATH=%%d\Editor\Unity.exe"
-    )
-)
-
-:: 3. 扫描 D 盘
-if "%EDITOR_PATH%"=="" (
-    for /r "D:\" %%f in (Tuanjie.exe) do set "EDITOR_PATH=%%f"
-)
-if "%EDITOR_PATH%"=="" (
-    for /r "D:\" %%f in (Unity.exe) do set "EDITOR_PATH=%%f"
-)
-
-echo [1/4] 查找编辑器...
-if "%EDITOR_PATH%"=="" (
-    echo.
-    echo ❌ 找不到 Tuanjie 或 Unity 编辑器！
-    echo.
-    echo 请安装团结引擎后重试：
-    echo   1. 打开 Tuanjie Hub
-    echo   2. 安装版本 2022.3.61t11 （含 WebGL 模块）
-    echo.
-    echo   下载地址: https://unity.cn/tuanjie/releases
-    echo.
-    pause
-    exit /b 1
-)
-echo    ✅ 找到: %EDITOR_PATH%
-echo.
-
-:: 清理旧构建
-echo [2/4] 清理旧构建...
-if exist "%PROJECT_DIR%WebGL" rmdir /s /q "%PROJECT_DIR%WebGL"
-mkdir "%PROJECT_DIR%WebGL"
-echo    ✅ 完成
-
-:: 执行 WebGL 构建
-echo [3/4] 构建 WebGL（约 2-10 分钟）...
-echo.
-
-set "BUILD_LOG=%PROJECT_DIR%WebGL\build.log"
-
-"%EDITOR_PATH%" ^
+"%EDITOR%" ^
     -quit ^
     -batchmode ^
     -nographics ^
-    -projectPath "%PROJECT_DIR%" ^
+    -projectPath "%~dp0." ^
     -buildTarget WebGL ^
     -executeMethod BuildScript.BuildWebGL ^
-    -logFile "%BUILD_LOG%"
+    -logFile "%LOG%"
 
 if %ERRORLEVEL% NEQ 0 (
     echo.
-    echo ❌ 构建失败！查看日志: WebGL\build.log
-    type "%BUILD_LOG%" | findstr /i "error exception"
+    echo ❌ 构建失败，错误信息：
+    type "%LOG%" | findstr /c:"Error" /c:"error CS" /c:"Aborting"
     echo.
+    echo 完整日志：%LOG%
     pause
     exit /b 1
 )
 
-echo    ✅ WebGL 构建完成！
+echo    ✅ 构建成功！
 echo.
-
-:: 部署到 GitHub Pages
-echo [4/4] 推送到 GitHub Pages...
-
-git add WebGL/ -f
-git commit -m "deploy: WebGL build %date% %time%" 2>nul
+echo [4/4] 推送到 GitHub...
+git add WebGL\ -f
+git commit -m "deploy: WebGL build" >nul 2>&1
 git push origin main
 
 echo.
 echo ============================================
-echo   ✅ 部署完成！
+echo   ✅ 全部完成！
 echo   游戏地址: https://jk12-hub.github.io/dazi_game/WebGL/
 echo ============================================
-echo.
 pause

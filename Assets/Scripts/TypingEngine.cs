@@ -164,18 +164,19 @@ public class TypingEngine : MonoBehaviour
         cpmHistory.Enqueue(instantCpm);
 
         float window = gameData.cpmSmoothWindow;
-        while (cpmHistory.Count > 1 && cpmHistory.Count > window * 10)
+        while (cpmHistory.Count > 1 && cpmHistory.Count > window * 60)
             cpmHistory.Dequeue();
 
-        // 加权平均
+        // 加权平均（直接遍历 Queue 避免每帧 ToArray 分配）
         float sum = 0, weightTotal = 0;
         int n = cpmHistory.Count;
-        float[] arr = cpmHistory.ToArray();
-        for (int i = 0; i < n; i++)
+        int idx = 0;
+        foreach (float val in cpmHistory)
         {
-            float w = i + 1; // 越新的权重越大
-            sum += arr[i] * w;
+            float w = idx + 1; // 越新的权重越大
+            sum += val * w;
             weightTotal += w;
+            idx++;
         }
         currentCpm = weightTotal > 0 ? sum / weightTotal : 0;
     }
